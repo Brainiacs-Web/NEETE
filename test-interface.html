@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCQ Test</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+  color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  width: 80%;
+  max-width: 1200px;
+  min-height: 500px;
+}
+
+
+.question-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex-grow: 1; /* Allow this container to take up remaining space */
+  height: calc(100vh - 40px); /* Fill the height but respect margins */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+    .question-text {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+
+    .question-number {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #6200ea;
+    }
+
+    .option-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .image-option {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-direction: row;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      padding: 10px 15px;
+      width: 100%;
+      cursor: pointer;
+      background: #ffffff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      height: 45px;
+    }
+
+    
+    .option-content {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      text-align: left;
+      padding: 8px;
+      border-radius: 8px;
+      background: #f1f1f1;
+      color: black;
+      font-size: 0.9rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.save-next-btn,
+.previous-btn {
+  width: 150px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #5A4BDA;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+    button:hover {
+      background-color: #3700b3;
+    }
+
+    .progress-container {
+  width: 25%;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  height: calc(100vh - 40px); /* Ensure it takes up the full height without overlap */
+}
+
+
+    .question-number {
+      padding: 10px 20px;
+      background-color: #6200ea;
+      color: white;
+      border-radius: 20px;
+      margin-right: 10px;
+      display: inline-block;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      width: auto;
+      height: 35px;
+    }
+
+    .question-number.active {
+      background-color: #3700b3;
+    }
+
+    .question-number.completed {
+      background-color: #4caf50;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .blur {
+      filter: blur(5px);
+      pointer-events: none;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      margin-top: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #e0e0e0;
+      color: black;
+    }
+
+    .continue-btn {
+      margin-top: 10px;
+    }
+
+    .submit-btn-container {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h2>Enter Username to Begin</h2>
+      <input type="text" id="username" placeholder="Enter your username">
+      <button class="continue-btn" onclick="validateUsername()">Continue</button>
+    </div>
+  </div>
+
+  <div class="container blur" id="content">
+    <div class="question-card" id="question-card"></div>
+    <div class="progress-container">
+      <h3>Question Progress</h3>
+      <div id="question-progress"></div>
+    </div>
+  </div>
+
+  <div class="submit-btn-container">
+    <button onclick="submitTest()">Submit Test</button>
+  </div>
+
+  <script type="module">
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2G48B1EdenSguUT3kYKCKobWcQxM_GV0",
+      authDomain: "test-89239.firebaseapp.com",
+      projectId: "test-89239",
+      storageBucket: "test-89239.firebasestorage.app",
+      messagingSenderId: "945793010997",
+      appId: "1:945793010997:web:60cc3fda32f7591586507c"
+    };
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let username = "";
+    let currentQuestionIndex = 0;
+    let questions = [];
+    let userResponses = [];
+
+    async function fetchQuestions() {
+      const questionsSnapshot = await getDocs(collection(db, "questions"));
+      questionsSnapshot.forEach((doc) => {
+        questions.push(doc.data());
+      });
+      displayQuestion();
+      displayProgress();
+    }
+
+    function displayQuestion() {
+      const questionData = questions[currentQuestionIndex];
+      const questionCard = document.getElementById("question-card");
+      questionCard.innerHTML = `  
+        <p class="question-number">Question ${currentQuestionIndex + 1}</p>
+        <p class="question-text">${questionData.question}</p>
+        <div class="option-container">
+          ${questionData.options.map((option, index) => ` 
+            <div class="image-option">
+              <input type="radio" name="q${currentQuestionIndex}" id="option${index}" value="${String.fromCharCode(65 + index)}">
+              <label for="option${index}">
+                <div class="option-content">${String.fromCharCode(65 + index)}. ${option}</div>
+              </label>
+            </div>
+          `).join("")}
+        </div>
+        <div class="button-container">
+          <button class="previous-btn" onclick="goToPrevious()">Previous</button>
+          <button class="save-next-btn" onclick="saveAndNext()">Save and Next</button>
+        </div>
+      `;
+
+      if (userResponses[currentQuestionIndex]) {
+        const savedAnswer = userResponses[currentQuestionIndex];
+        const radioBtn = document.querySelector(`input[name="q${currentQuestionIndex}"][value="${savedAnswer}"]`);
+        if (radioBtn) radioBtn.checked = true;
+      }
+    }
+
+    function goToPrevious() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        displayQuestion();
+        updateProgress();
+      }
+    }
+
+    function displayProgress() {
+      const progressContainer = document.getElementById("question-progress");
+      progressContainer.innerHTML = '';
+      questions.forEach((_, index) => {
+        const questionNumber = document.createElement("span");
+        questionNumber.textContent = index + 1;
+        questionNumber.classList.add("question-number");
+        questionNumber.onclick = () => goToQuestion(index);
+        progressContainer.appendChild(questionNumber);
+      });
+    }
+
+    function goToQuestion(index) {
+      currentQuestionIndex = index;
+      displayQuestion();
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const progressContainer = document.getElementById("question-progress");
+      const questionNumbers = progressContainer.querySelectorAll(".question-number");
+      questionNumbers.forEach((num, index) => {
+        num.classList.remove("active", "completed");
+        if (index < currentQuestionIndex) {
+          num.classList.add("completed");
+        } else if (index === currentQuestionIndex) {
+          num.classList.add("active");
+        }
+      });
+    }
+
+    window.saveAndNext = function () {
+      const selectedOption = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
+      const selectedAnswer = selectedOption ? selectedOption.value : null;
+      userResponses[currentQuestionIndex] = selectedAnswer;
+
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions.length) {
+        currentQuestionIndex = 0;
+      }
+
+      displayQuestion();
+      updateProgress();
+    };
+
+    window.submitTest = function () {
+  const confirmation = confirm("Are you sure you want to submit the test?");
+  if (confirmation) {
+    const userDocRef = doc(db, "responses", username);
+    const responseData = {};
+    for (let i = 0; i < questions.length; i++) {
+      responseData[`responses.${i}`] = {
+        question: questions[i].question,
+        selectedAnswer: userResponses[i] || null
+      };
+    }
+
+    // Save user responses to Firestore
+    setDoc(userDocRef, {
+      ...responseData,
+      timestamp: serverTimestamp()
+    }, { merge: true }).then(() => {
+      // After saving data, redirect to result page
+      alert("Test submitted successfully!");
+      window.location.href = `result.html?username=${username}`; // Redirect to result page
+    }).catch((error) => {
+      alert("Error submitting test: " + error.message);
+    });
+  }
+};
+
+
+    window.validateUsername = function () {
+      const usernameInput = document.getElementById("username").value;
+      const modalOverlay = document.getElementById("modal-overlay");
+      const content = document.getElementById("content");
+
+      if (usernameInput) {
+        username = usernameInput;
+        setDoc(doc(db, "responses", username), {
+          timestamp: serverTimestamp(),
+          responses: []
+        });
+        modalOverlay.style.display = "none";
+        content.classList.remove("blur");
+        alert("Welcome, " + username);
+        fetchQuestions();
+      } else {
+        alert("Invalid username. Access denied.");
+      }
+    };
+  </script>
+</body>
+</html>

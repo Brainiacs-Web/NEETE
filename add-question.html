@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Add Questions</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+
+  <style>
+    /* General Reset */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212; /* Dark background */
+      color: #ffffff; /* White text for contrast */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #e0e0e0; /* Light gray */
+    }
+
+    form {
+      background-color: #1e1e1e; /* Slightly lighter shade of black */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      width: 400px;
+    }
+
+    label {
+      font-size: 1rem;
+      color: #e0e0e0;
+    }
+
+    input, select, button {
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      padding: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+    }
+
+    input, select {
+      background-color: #333333; /* Dark gray for input background */
+      color: #ffffff; /* White text */
+    }
+
+    input::placeholder {
+      color: #aaaaaa; /* Placeholder text color */
+    }
+
+    button {
+      background-color: #6200ea; /* Vibrant purple for call-to-action */
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #3700b3; /* Darker purple for hover state */
+    }
+
+    button:active {
+      background-color: #1a00a1; /* Even darker purple for active state */
+    }
+  </style>
+
+  <!-- Mark the script as a module -->
+  <script type="module">
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2G48B1EdenSguUT3kYKCKobWcQxM_GV0",
+      authDomain: "test-89239.firebaseapp.com",
+      projectId: "test-89239",
+      storageBucket: "test-89239.firebasestorage.app",
+      messagingSenderId: "945793010997",
+      appId: "1:945793010997:web:60cc3fda32f7591586507c"
+    };
+
+    // Import required Firebase methods from the modular SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);  // Initialize the Firebase app
+
+    // Initialize Firestore
+    const db = getFirestore(app);  // Firestore reference
+
+    const questionForm = document.getElementById("question-form");
+
+    questionForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Get form data
+      const question = document.getElementById("question").value;
+      const optionA = document.getElementById("optionA").value;
+      const optionB = document.getElementById("optionB").value;
+      const optionC = document.getElementById("optionC").value;
+      const optionD = document.getElementById("optionD").value;
+      const correctAnswer = document.getElementById("correctAnswer").value;
+
+      try {
+        // Attempt to add the question to Firestore with auto ID
+        const docRef = await addDoc(collection(db, "questions"), {
+          question: question,
+          options: [optionA, optionB, optionC, optionD],
+          correctAnswer: correctAnswer
+        });
+
+        alert("Question added successfully!");
+        questionForm.reset();
+      } catch (error) {
+        // Log the error to the console to see what went wrong
+        console.error("Error adding question:", error);
+        alert("Error adding question: " + error.message);  // Show error message in alert
+      }
+    });
+  </script>
+</head>
+<body>
+  <form id="question-form">
+    <h1>Add Questions</h1>
+    <div>
+      <label for="question">Question:</label>
+      <input type="text" id="question" name="question" placeholder="Enter your question" required>
+    </div>
+    <div>
+      <label for="optionA">Option A:</label>
+      <input type="text" id="optionA" name="optionA" placeholder="Enter Option A" required>
+    </div>
+    <div>
+      <label for="optionB">Option B:</label>
+      <input type="text" id="optionB" name="optionB" placeholder="Enter Option B" required>
+    </div>
+    <div>
+      <label for="optionC">Option C:</label>
+      <input type="text" id="optionC" name="optionC" placeholder="Enter Option C" required>
+    </div>
+    <div>
+      <label for="optionD">Option D:</label>
+      <input type="text" id="optionD" name="optionD" placeholder="Enter Option D" required>
+    </div>
+    <div>
+      <label for="correctAnswer">Correct Answer:</label>
+      <select id="correctAnswer" name="correctAnswer" required>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+      </select>
+    </div>
+    <button type="submit">Add Question</button>
+  </form>
+</body>
+</html>
