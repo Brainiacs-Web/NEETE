@@ -29,6 +29,13 @@
   min-height: 500px;
 }
 
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 80%;
+  max-width: 1200px;
+}
 
 .question-card {
   background-color: #ffffff;
@@ -124,31 +131,42 @@ button {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  height: calc(100vh - 40px); /* Ensure it takes up the full height without overlap */
+  height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.question-number {
+  display: inline-block;
+  margin: 0 5px;
+  padding: 5px 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.question-number:hover {
+  background-color: #3700b3;
 }
 
 
-    .question-number {
-      padding: 10px 20px;
-      background-color: #6200ea;
-      color: white;
-      border-radius: 20px;
-      margin-right: 10px;
-      display: inline-block;
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: bold;
-      width: auto;
-      height: 35px;
-    }
+.question-number.active {
+  background-color: white;
+  border: 2px solid black;
+}
 
-    .question-number.active {
-      background-color: #3700b3;
-    }
+.question-number.answered {
+  background-color: #28a745; /* Green glow for answered */
+  color: white;
+}
 
-    .question-number.completed {
-      background-color: #4caf50;
-    }
+.question-number.reviewed {
+  background-color: #b907ff; /* Yellow glow for review */
+  color: black;
+}
+
+.question-number.unanswered {
+  background-color: #f8061a; /* Red glow for unanswered */
+  color: black;
+}
 
     /* Modal styles */
     .modal-overlay {
@@ -196,6 +214,29 @@ button {
       bottom: 20px;
       right: 20px;
     }
+
+    .timer {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  background: #6200ea;
+  color: white;
+  padding: 10px 0;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.timer span {
+  color: #ffcc00;
+}
+
+.progress-container h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
   </style>
 </head>
 <body>
@@ -213,6 +254,10 @@ button {
       <h3>Question Progress</h3>
       <div id="question-progress"></div>
     </div>
+  </div>
+
+  <div class="timer" id="timer">
+    Time Left: <span id="time-left">03:00:00</span>
   </div>
 
   <div class="submit-btn-container">
@@ -250,41 +295,73 @@ button {
     }
 
     function displayQuestion() {
-      const questionData = questions[currentQuestionIndex];
-      const questionCard = document.getElementById("question-card");
-      questionCard.innerHTML = `  
-        <p class="question-number">Question ${currentQuestionIndex + 1}</p>
-        <p class="question-text">${questionData.question}</p>
-        <div class="option-container">
-          ${questionData.options.map((option, index) => ` 
-            <div class="image-option">
-              <input type="radio" name="q${currentQuestionIndex}" id="option${index}" value="${String.fromCharCode(65 + index)}">
-              <label for="option${index}">
-                <div class="option-content">${String.fromCharCode(65 + index)}. ${option}</div>
-              </label>
-            </div>
-          `).join("")}
-        </div>
-        <div class="button-container">
-          <button class="previous-btn" onclick="goToPrevious()">Previous</button>
-          <button class="save-next-btn" onclick="saveAndNext()">Save and Next</button>
-        </div>
-      `;
+  const questionData = questions[currentQuestionIndex];
+  const questionCard = document.getElementById("question-card");
 
-      if (userResponses[currentQuestionIndex]) {
-        const savedAnswer = userResponses[currentQuestionIndex];
-        const radioBtn = document.querySelector(`input[name="q${currentQuestionIndex}"][value="${savedAnswer}"]`);
-        if (radioBtn) radioBtn.checked = true;
-      }
-    }
+  // Check if there's a saved answer or review state in localStorage
+  const savedAnswer = localStorage.getItem(`response_${currentQuestionIndex}`);
+  const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
 
-    function goToPrevious() {
-      if (currentQuestionIndex > 0) {
-        currentQuestionIndex--;
-        displayQuestion();
-        updateProgress();
-      }
-    }
+  questionCard.innerHTML = `  
+    <p class="question-number">Question ${currentQuestionIndex + 1}</p>
+    <p class="question-text">${questionData.question}</p>
+    <div class="option-container">
+      ${questionData.options
+        .map(
+          (option, index) => ` 
+        <div class="image-option">
+          <input type="radio" name="q${currentQuestionIndex}" id="option${index}" value="${String.fromCharCode(65 + index)}">
+          <label for="option${index}">
+            <div class="option-content">${String.fromCharCode(65 + index)}. ${option}</div>
+          </label>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+    <div class="button-container">
+      <button class="previous-btn" onclick="goToPrevious()">Previous</button>
+      <button class="clear-btn" onclick="clearSelection()">Clear Selection</button>
+      <button class="mark-review-btn" onclick="markAsReview()">${isMarkedForReview ? "Unmark Review" : "Mark as Review"}</button>
+      <button class="save-next-btn" onclick="saveAndNext()">Save and Next</button>
+    </div>
+  `;
+
+  // If there was a saved answer, mark it as checked
+  if (savedAnswer) {
+    const radioBtn = document.querySelector(`input[name="q${currentQuestionIndex}"][value="${savedAnswer}"]`);
+    if (radioBtn) radioBtn.checked = true;
+  }
+}
+
+window.markAsReview = function () {
+  const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
+
+  if (isMarkedForReview) {
+    // Unmark the question for review
+    localStorage.removeItem(`review_${currentQuestionIndex}`);
+  } else {
+    // Mark the question for review
+    localStorage.setItem(`review_${currentQuestionIndex}`, "true");
+  }
+  
+
+  // Update the question display and progress bar
+  displayQuestion();
+  updateProgress();
+};
+// Previous button function (updated)
+window.goToPrevious = function () {
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--; // Decrement the question index
+    displayQuestion(); // Display the previous question
+    updateProgress(); // Update the progress bar
+  } else {
+    alert("This is the first question!");
+  }
+};
+
+
 
     function displayProgress() {
       const progressContainer = document.getElementById("question-progress");
@@ -304,32 +381,50 @@ button {
       updateProgress();
     }
 
-    function updateProgress() {
-      const progressContainer = document.getElementById("question-progress");
-      const questionNumbers = progressContainer.querySelectorAll(".question-number");
-      questionNumbers.forEach((num, index) => {
-        num.classList.remove("active", "completed");
-        if (index < currentQuestionIndex) {
-          num.classList.add("completed");
-        } else if (index === currentQuestionIndex) {
-          num.classList.add("active");
-        }
-      });
+   function updateProgress() {
+  const progressContainer = document.getElementById("question-progress");
+  const questionNumbers = progressContainer.querySelectorAll(".question-number");
+  questionNumbers.forEach((num, index) => {
+    num.classList.remove("active", "answered", "reviewed", "unanswered");
+
+    // Check states for each question
+    const isAnswered = localStorage.getItem(`response_${index}`);
+    const isReviewed = localStorage.getItem(`review_${index}`) === "true";
+
+    if (index < currentQuestionIndex) {
+      num.classList.add("completed");
+    } else if (index === currentQuestionIndex) {
+      num.classList.add("active");
     }
 
+    if (isAnswered) {
+      num.classList.add("answered");
+    } else if (isReviewed) {
+      num.classList.add("reviewed");
+    } else {
+      num.classList.add("unanswered");
+    }
+  });
+}
+
+
     window.saveAndNext = function () {
-      const selectedOption = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
-      const selectedAnswer = selectedOption ? selectedOption.value : null;
-      userResponses[currentQuestionIndex] = selectedAnswer;
+  const selectedOption = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
+  const selectedAnswer = selectedOption ? selectedOption.value : null;
+  
+  // Save the answer to localStorage
+  localStorage.setItem(`response_${currentQuestionIndex}`, selectedAnswer);
 
-      currentQuestionIndex++;
-      if (currentQuestionIndex >= questions.length) {
-        currentQuestionIndex = 0;
-      }
+  userResponses[currentQuestionIndex] = selectedAnswer;
 
-      displayQuestion();
-      updateProgress();
-    };
+  currentQuestionIndex++;
+  if (currentQuestionIndex >= questions.length) {
+    currentQuestionIndex = 0;
+  }
+
+  displayQuestion();
+  updateProgress();
+};
 
     window.submitTest = function () {
   const confirmation = confirm("Are you sure you want to submit the test?");
@@ -344,18 +439,36 @@ button {
     }
 
     // Save user responses to Firestore
-    setDoc(userDocRef, {
-      ...responseData,
-      timestamp: serverTimestamp()
-    }, { merge: true }).then(() => {
-      // After saving data, redirect to result page
-      alert("Test submitted successfully!");
-      window.location.href = `result.html?username=${username}`; // Redirect to result page
-    }).catch((error) => {
-      alert("Error submitting test: " + error.message);
-    });
+    setDoc(
+      userDocRef,
+      {
+        ...responseData,
+        timestamp: serverTimestamp(),
+      },
+      { merge: true }
+    )
+      .then(() => {
+        // After saving data, clear local storage and redirect to result page
+        localStorage.clear(); // Clear all local storage data
+        alert("Test submitted successfully!");
+        window.location.href = `result.html?username=${username}`; // Redirect to result page
+      })
+      .catch((error) => {
+        alert("Error submitting test: " + error.message);
+      });
   }
 };
+
+
+window.clearSelection = function () {
+  // Clear the radio button selection
+  const radios = document.querySelectorAll(`input[name="q${currentQuestionIndex}"]`);
+  radios.forEach(radio => radio.checked = false);
+
+  // Remove the answer from localStorage
+  localStorage.removeItem(`response_${currentQuestionIndex}`);
+};
+
 
 
     window.validateUsername = function () {
@@ -377,6 +490,35 @@ button {
         alert("Invalid username. Access denied.");
       }
     };
+
+    let timeRemaining = 3 * 60 * 60; // 3 hours in seconds
+
+function startTimer() {
+  const timerElement = document.getElementById("time-left");
+
+  const interval = setInterval(() => {
+    const hours = Math.floor(timeRemaining / 3600);
+    const minutes = Math.floor((timeRemaining % 3600) / 60);
+    const seconds = timeRemaining % 60;
+
+    timerElement.textContent = `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+    if (timeRemaining <= 0) {
+      clearInterval(interval);
+      alert("Time's up! Your test will be submitted automatically.");
+      submitTest(); // Automatically submit the test
+    }
+
+    timeRemaining--;
+  }, 1000);
+}
+
+window.onload = () => {
+  startTimer();
+};
+
   </script>
 </body>
 </html>
