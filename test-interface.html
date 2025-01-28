@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
 
   <style>
-    body {
+body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
@@ -20,87 +21,156 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  flex-direction: column;
 }
+
+.top-container {
+  width: 100%;
+  height: 90px;
+  background-color: #6200ea;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  font-size: 1.5rem;
+  padding: 0 20px;
+  margin-bottom: 5px;
+  box-sizing: border-box;
+}
+
+.top-container .logo {
+  height: 40px; /* Adjust as needed */
+  width: auto;
+}
+
+
+.top-container .user-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
 
 .container {
   display: flex;
-  width: 80%;
+  width: 100%;
   max-width: 1200px;
   min-height: 500px;
+  justify-content: space-between;
+  margin-top: 5px;
+  height: calc(100vh - 120px); /* Ensure full height minus the top container */
 }
 
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  width: 80%;
-  max-width: 1200px;
-}
-
-.question-card {
+.question-card, .progress-container {
+  flex-grow: 1; /* Allow both containers to grow equally */
+  margin-right: 20px;
   background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  flex-grow: 1; /* Allow this container to take up remaining space */
-  height: calc(100vh - 40px); /* Fill the height but respect margins */
+  height: 100%; /* Fill available space */
+}
+
+.question-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
-    .question-text {
-      font-size: 1.2rem;
-      margin-bottom: 20px;
-    }
 
-    .question-number {
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 20px;
-      color: #6200ea;
-    }
+.progress-container {
+  overflow-y: auto;
+  width: 15%; /* Decreased width of the progress container */
+}
 
-    .option-container {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-    }
+.question-text {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
 
-    .image-option {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      flex-direction: row;
-      border: 2px solid transparent;
-      border-radius: 8px;
-      padding: 10px 15px;
-      width: 100%;
-      cursor: pointer;
-      background: #ffffff;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      height: 45px;
-    }
+.question-number {
+  display: inline-block;
+  margin: 0 5px;
+  padding: 5px 10px;
+  border: 1px solid black;
+  border-radius: 50px; /* Ensure circular appearance */
+  cursor: pointer;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
 
-    
-    .option-content {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      width: 100%;
-      height: 100%;
-      text-align: left;
-      padding: 8px;
-      border-radius: 8px;
-      background: #f1f1f1;
-      color: black;
-      font-size: 0.9rem;
-      font-weight: bold;
-      transition: all 0.3s ease;
-    }
 
-    .button-container {
+
+.question-number.active {
+  background-color: white;
+  border: 2px solid black;
+}
+
+.question-number.answered {
+  background-color: #28a745;
+  color: white;
+}
+
+.question-number.reviewed {
+  background-color: #b907ff;
+  color: black;
+}
+
+.question-number.unanswered {
+  background-color: #f8061a;
+  color: black;
+}
+
+.option-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.image-option {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 10px 15px;
+  width: 80%;
+  cursor: pointer;
+  background: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: 45px;
+}
+
+.image-option label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.option-content {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f1f1f1;
+  color: rgb(12, 12, 12);
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.button-container {
   display: flex;
   justify-content: space-between;
   margin-top: auto;
@@ -121,113 +191,8 @@ button {
   font-size: 1rem;
 }
 
-    button:hover {
-      background-color: #3700b3;
-    }
-
-    .progress-container {
-  width: 25%;
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  height: calc(100vh - 40px);
-  overflow-y: auto;
-}
-
-.question-number {
-  display: inline-block;
-  margin: 0 5px;
-  padding: 5px 10px;
-  border: 1px solid black;
-  border-radius: 5px;
-  cursor: pointer;
-}
-.question-number:hover {
+button:hover {
   background-color: #3700b3;
-}
-
-
-.question-number.active {
-  background-color: white;
-  border: 2px solid black;
-}
-
-.question-number.answered {
-  background-color: #28a745; /* Green glow for answered */
-  color: white;
-}
-
-.question-number.reviewed {
-  background-color: #b907ff; /* Yellow glow for review */
-  color: black;
-}
-
-.question-number.unanswered {
-  background-color: #f8061a; /* Red glow for unanswered */
-  color: black;
-}
-
-    /* Modal styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal {
-      background-color: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .blur {
-      filter: blur(5px);
-      pointer-events: none;
-    }
-
-    input[type="text"] {
-      padding: 10px;
-      width: 80%;
-      margin-top: 10px;
-      border: none;
-      border-radius: 4px;
-      background-color: #e0e0e0;
-      color: black;
-    }
-
-    .continue-btn {
-      margin-top: 10px;
-    }
-
-    .submit-btn-container {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-    }
-
-    .timer {
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-align: center;
-  background: #6200ea;
-  color: white;
-  padding: 10px 0;
-  margin-bottom: 10px;
-  border-radius: 8px;
-}
-
-.timer span {
-  color: #ffcc00;
 }
 
 .progress-container h3 {
@@ -237,9 +202,105 @@ button {
   color: #333;
 }
 
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+input[type="text"] {
+  padding: 10px;
+  width: 80%;
+  margin-top: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  color: black;
+}
+
+.continue-btn {
+  margin-top: 10px;
+}
+
+.submit-btn-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+.timer {
+  font-size: 1rem;
+  font-weight: bold;
+  background: transparent;
+  color: white;
+  padding: 5px 10px;
+  margin: 0;
+}
+
+/* Disable text selection */
+body, .question-card, .option-container, .top-container, .progress-container {
+  user-select: none; /* Prevents text selection */
+  -webkit-user-select: none; /* For Safari */
+  -moz-user-select: none; /* For Firefox */
+  -ms-user-select: none; /* For Internet Explorer/Edge */
+}
+
+/* Disable right-click */
+body {
+  -webkit-touch-callout: none; /* Prevents "copy" on iOS */
+  -webkit-user-select: none; /* Prevents text selection in WebKit browsers */
+}
+
+/* Disable drag of images and elements */
+img {
+  pointer-events: none; /* Disable image drag */
+}
+
+/* Optional: Show a message on right-click attempt */
+body::after {
+  content: "Right-click is disabled on this page.";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: red;
+  display: none;
+  font-size: 1.2rem;
+}
+
+body.no-right-click::after {
+  display: block;
+}
+
+
   </style>
 </head>
+
 <body>
+
+  <div class="top-container">
+    <div>Your Top Container Content Here</div>
+    
+    <div class="timer" id="timer">
+      Time Left: <span id="time-left">03:00:00</span>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal">
       <h2>Enter Username to Begin</h2>
@@ -253,16 +314,17 @@ button {
     <div class="progress-container">
       <h3>Question Progress</h3>
       <div id="question-progress"></div>
+
+      
     </div>
   </div>
 
-  <div class="timer" id="timer">
-    Time Left: <span id="time-left">03:00:00</span>
-  </div>
+  
 
   <div class="submit-btn-container">
     <button onclick="submitTest()">Submit Test</button>
   </div>
+  
 
   <script type="module">
     const firebaseConfig = {
@@ -295,20 +357,20 @@ button {
     }
 
     function displayQuestion() {
-  const questionData = questions[currentQuestionIndex];
-  const questionCard = document.getElementById("question-card");
+      const questionData = questions[currentQuestionIndex];
+      const questionCard = document.getElementById("question-card");
 
-  // Check if there's a saved answer or review state in localStorage
-  const savedAnswer = localStorage.getItem(`response_${currentQuestionIndex}`);
-  const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
+      // Check if there's a saved answer or review state in localStorage
+      const savedAnswer = localStorage.getItem(`response_${currentQuestionIndex}`);
+      const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
 
-  questionCard.innerHTML = `  
+      questionCard.innerHTML = `  
     <p class="question-number">Question ${currentQuestionIndex + 1}</p>
     <p class="question-text">${questionData.question}</p>
     <div class="option-container">
       ${questionData.options
-        .map(
-          (option, index) => ` 
+          .map(
+            (option, index) => ` 
         <div class="image-option">
           <input type="radio" name="q${currentQuestionIndex}" id="option${index}" value="${String.fromCharCode(65 + index)}">
           <label for="option${index}">
@@ -316,8 +378,8 @@ button {
           </label>
         </div>
       `
-        )
-        .join("")}
+          )
+          .join("")}
     </div>
     <div class="button-container">
       <button class="previous-btn" onclick="goToPrevious()">Previous</button>
@@ -327,39 +389,38 @@ button {
     </div>
   `;
 
-  // If there was a saved answer, mark it as checked
-  if (savedAnswer) {
-    const radioBtn = document.querySelector(`input[name="q${currentQuestionIndex}"][value="${savedAnswer}"]`);
-    if (radioBtn) radioBtn.checked = true;
-  }
-}
+      // If there was a saved answer, mark it as checked
+      if (savedAnswer) {
+        const radioBtn = document.querySelector(`input[name="q${currentQuestionIndex}"][value="${savedAnswer}"]`);
+        if (radioBtn) radioBtn.checked = true;
+      }
+    }
 
-window.markAsReview = function () {
-  const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
+    window.markAsReview = function () {
+      const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
 
-  if (isMarkedForReview) {
-    // Unmark the question for review
-    localStorage.removeItem(`review_${currentQuestionIndex}`);
-  } else {
-    // Mark the question for review
-    localStorage.setItem(`review_${currentQuestionIndex}`, "true");
-  }
-  
+      if (isMarkedForReview) {
+        // Unmark the question for review
+        localStorage.removeItem(`review_${currentQuestionIndex}`);
+      } else {
+        // Mark the question for review
+        localStorage.setItem(`review_${currentQuestionIndex}`, "true");
+      }
 
-  // Update the question display and progress bar
-  displayQuestion();
-  updateProgress();
-};
-// Previous button function (updated)
-window.goToPrevious = function () {
-  if (currentQuestionIndex > 0) {
-    currentQuestionIndex--; // Decrement the question index
-    displayQuestion(); // Display the previous question
-    updateProgress(); // Update the progress bar
-  } else {
-    alert("This is the first question!");
-  }
-};
+      // Update the question display and progress bar
+      displayQuestion();
+      updateProgress();
+    };
+    // Previous button function (updated)
+    window.goToPrevious = function () {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--; // Decrement the question index
+        displayQuestion(); // Display the previous question
+        updateProgress(); // Update the progress bar
+      } else {
+        alert("This is the first question!");
+      }
+    };
 
 
 
@@ -380,94 +441,110 @@ window.goToPrevious = function () {
       displayQuestion();
       updateProgress();
     }
+    function updateProgress() {
+      const progressContainer = document.getElementById("question-progress");
+      const questionNumbers = progressContainer.querySelectorAll(".question-number");
+      questionNumbers.forEach((num, index) => {
+        num.classList.remove("active", "answered", "reviewed", "unanswered", "completed");
 
-   function updateProgress() {
-  const progressContainer = document.getElementById("question-progress");
-  const questionNumbers = progressContainer.querySelectorAll(".question-number");
-  questionNumbers.forEach((num, index) => {
-    num.classList.remove("active", "answered", "reviewed", "unanswered");
+        // Retrieve the color stored in localStorage
+        const color = localStorage.getItem(`color_${index}`);
 
-    // Check states for each question
-    const isAnswered = localStorage.getItem(`response_${index}`);
-    const isReviewed = localStorage.getItem(`review_${index}`) === "true";
+        // Set the background color based on the stored color
+        if (color) {
+          num.style.backgroundColor = color;
+          num.style.color = 'white'; // Change text color to white
+        } else {
+          // If no color is set, apply the default state (unanswered)
+          num.style.backgroundColor = '#f8061a'; // Red
+          num.style.color = 'white'; // Text color is white
+        }
 
-    if (index < currentQuestionIndex) {
-      num.classList.add("completed");
-    } else if (index === currentQuestionIndex) {
-      num.classList.add("active");
+        // Update progress for the current question index
+        if (index < currentQuestionIndex) {
+          num.classList.add("completed");
+        } else if (index === currentQuestionIndex) {
+          num.classList.add("active");
+        }
+      });
     }
-
-    if (isAnswered) {
-      num.classList.add("answered");
-    } else if (isReviewed) {
-      num.classList.add("reviewed");
-    } else {
-      num.classList.add("unanswered");
-    }
-  });
-}
 
 
     window.saveAndNext = function () {
-  const selectedOption = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
-  const selectedAnswer = selectedOption ? selectedOption.value : null;
-  
-  // Save the answer to localStorage
-  localStorage.setItem(`response_${currentQuestionIndex}`, selectedAnswer);
+      const selectedOption = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
+      const selectedAnswer = selectedOption ? selectedOption.value : null;
 
-  userResponses[currentQuestionIndex] = selectedAnswer;
+      // Save the answer to localStorage
+      localStorage.setItem(`response_${currentQuestionIndex}`, selectedAnswer);
 
-  currentQuestionIndex++;
-  if (currentQuestionIndex >= questions.length) {
-    currentQuestionIndex = 0;
-  }
+      // Check if the current question is marked for review
+      const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
 
-  displayQuestion();
-  updateProgress();
-};
+      // If question is marked for review and has an answer, change the color to orange
+      if (isMarkedForReview && selectedAnswer) {
+        localStorage.setItem(`color_${currentQuestionIndex}`, "Gray");
+      } else if (isMarkedForReview) {
+        localStorage.setItem(`color_${currentQuestionIndex}`, "purple");
+      } else if (selectedAnswer) {
+        // If answered, mark it green
+        localStorage.setItem(`color_${currentQuestionIndex}`, "green");
+      } else {
+        // If unanswered, mark it red
+        localStorage.setItem(`color_${currentQuestionIndex}`, "red");
+      }
+
+      userResponses[currentQuestionIndex] = selectedAnswer;
+
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions.length) {
+        currentQuestionIndex = 0;
+      }
+
+      displayQuestion();
+      updateProgress();
+    };
+
 
     window.submitTest = function () {
-  const confirmation = confirm("Are you sure you want to submit the test?");
-  if (confirmation) {
-    const userDocRef = doc(db, "responses", username);
-    const responseData = {};
-    for (let i = 0; i < questions.length; i++) {
-      responseData[`responses.${i}`] = {
-        question: questions[i].question,
-        selectedAnswer: userResponses[i] || null
-      };
-    }
+      const confirmation = confirm("Are you sure you want to submit the test?");
+      if (confirmation) {
+        const userDocRef = doc(db, "responses", username);
+        const responseData = {};
+        for (let i = 0; i < questions.length; i++) {
+          responseData[`responses.${i}`] = {
+            question: questions[i].question,
+            selectedAnswer: userResponses[i] || null
+          };
+        }
 
-    // Save user responses to Firestore
-    setDoc(
-      userDocRef,
-      {
-        ...responseData,
-        timestamp: serverTimestamp(),
-      },
-      { merge: true }
-    )
-      .then(() => {
-        // After saving data, clear local storage and redirect to result page
-        localStorage.clear(); // Clear all local storage data
-        alert("Test submitted successfully!");
-        window.location.href = `result.html?username=${username}`; // Redirect to result page
-      })
-      .catch((error) => {
-        alert("Error submitting test: " + error.message);
-      });
-  }
-};
+        // Save user responses to Firestore
+        setDoc(
+          userDocRef,
+          {
+            ...responseData,
+            timestamp: serverTimestamp(),
+          },
+          { merge: true }
+        )
+          .then(() => {
+            // After saving data, clear local storage and redirect to result page
+            localStorage.clear(); // Clear all local storage data
+            alert("Test submitted successfully!");
+            window.location.href = `result.html?username=${username}`; // Redirect to result page
+          })
+          .catch((error) => {
+            alert("Error submitting test: " + error.message);
+          });
+      }
+    };
+    window.clearSelection = function () {
+      // Clear the radio button selection
+      const radios = document.querySelectorAll(`input[name="q${currentQuestionIndex}"]`);
+      radios.forEach(radio => radio.checked = false);
 
-
-window.clearSelection = function () {
-  // Clear the radio button selection
-  const radios = document.querySelectorAll(`input[name="q${currentQuestionIndex}"]`);
-  radios.forEach(radio => radio.checked = false);
-
-  // Remove the answer from localStorage
-  localStorage.removeItem(`response_${currentQuestionIndex}`);
-};
+      // Remove the answer from localStorage
+      localStorage.removeItem(`response_${currentQuestionIndex}`);
+    };
 
 
 
@@ -493,32 +570,45 @@ window.clearSelection = function () {
 
     let timeRemaining = 3 * 60 * 60; // 3 hours in seconds
 
-function startTimer() {
-  const timerElement = document.getElementById("time-left");
+    function startTimer() {
+      const timerElement = document.getElementById("time-left");
 
-  const interval = setInterval(() => {
-    const hours = Math.floor(timeRemaining / 3600);
-    const minutes = Math.floor((timeRemaining % 3600) / 60);
-    const seconds = timeRemaining % 60;
+      const interval = setInterval(() => {
+        const hours = Math.floor(timeRemaining / 3600);
+        const minutes = Math.floor((timeRemaining % 3600) / 60);
+        const seconds = timeRemaining % 60;
 
-    timerElement.textContent = `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+        timerElement.textContent = `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
-    if (timeRemaining <= 0) {
-      clearInterval(interval);
-      alert("Time's up! Your test will be submitted automatically.");
-      submitTest(); // Automatically submit the test
+        if (timeRemaining <= 0) {
+          clearInterval(interval);
+          alert("Time's up! Your test will be submitted automatically.");
+          submitTest(); // Automatically submit the test
+        }
+
+        timeRemaining--;
+      }, 1000);
     }
 
-    timeRemaining--;
-  }, 1000);
-}
+    window.onload = () => {
+      startTimer();
+    };
 
-window.onload = () => {
-  startTimer();
-};
+
+    // Disable right-click functionality
+document.addEventListener('contextmenu', function (event) {
+  event.preventDefault(); // Disable the right-click menu
+  document.body.classList.add('no-right-click');
+});
+
+// Optional: You can also disable text selection using JavaScript
+document.addEventListener('selectstart', function (event) {
+  event.preventDefault(); // Prevents text selection
+});
 
   </script>
 </body>
+
 </html>
