@@ -24,25 +24,30 @@
       max-width: 500px;
       background-color: #00FFFF;
       border-radius: 20px;
-      padding: 20px;
+      padding: 5px 20px;
       margin-bottom: 20px;
       color: black;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      height: 50px; /* Reduced height to 50px */
+      display: flex;
+      justify-content: space-between; /* Added this line to space items */
+      align-items: center;
     }
 
     .test-name {
-      font-size: 2rem;
+      font-size: 1.5rem; /* Adjusted font size for smaller container */
       font-weight: 600;
-      margin-bottom: 20px;
+      text-align: left; /* Align text to the left */
+      margin: 0; /* Remove margin to fit within 50px height */
+      flex-grow: 1; /* Makes the test name take up available space */
     }
 
-    .start-btn {
-      display: inline-block;
-      padding: 10px 20px;
+    .start-btn, .results-btn {
+      padding: 8px 16px; /* Reduced padding for smaller button */
       background-color: black;
       color: #00FFFF;
       text-transform: uppercase;
-      font-size: 1.2rem;
+      font-size: 1rem; /* Reduced font size */
       font-weight: 600;
       border: none;
       border-radius: 5px;
@@ -50,7 +55,7 @@
       transition: background-color 0.3s;
     }
 
-    .start-btn:hover {
+    .start-btn:hover, .results-btn:hover {
       background-color: #333;
     }
 
@@ -76,7 +81,10 @@
   <!-- TEST 1 Container -->
   <div class="container">
     <div class="test-name">TEST 1</div>
-    <button class="start-btn" onclick="window.location.href='page1.html'">Start</button>
+    <div class="button-container">
+      <button class="start-btn" onclick="window.location.href='page1.html'">Start</button>
+      <button class="results-btn" onclick="window.location.href='result.html'">Results</button>
+    </div>
   </div>
 
   <!-- Register Button -->
