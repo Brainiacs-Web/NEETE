@@ -12,7 +12,7 @@
 
   <style>
 body {
-  font-family: Arial, sans-serif;
+  font-family: "DM Sans", sans-serif;
   margin: 0;
   padding: 0;
   background-color: #f0f0f0;
@@ -70,6 +70,20 @@ body {
   height: 100%; /* Fill available space */
 }
 
+.progress-container span {
+  width: 25px; /* Reduced size */
+  height: 25px; /* Reduced size */
+  background-color: white;
+  border: 2px solid #ddd;
+  border-radius: 8px; /* Rounded edges */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px; /* Smaller font size for better fit */
+  color: #333;
+  font-weight: bold;
+}
+
 .question-card {
   display: flex;
   flex-direction: column;
@@ -78,7 +92,7 @@ body {
 
 .progress-container {
   overflow-y: auto;
-  width: 15%; /* Decreased width of the progress container */
+  width: 20%; /* Decreased width of the progress container */
 }
 
 .question-text {
@@ -88,7 +102,7 @@ body {
 
 .question-number {
   display: inline-block;
-  margin: 0 5px;
+  margin-bottom: 10px;
   padding: 5px 10px;
   border: 1px solid black;
   border-radius: 50px; /* Ensure circular appearance */
@@ -98,7 +112,11 @@ body {
   font-size: 1.2rem;
 }
 
-
+#question-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
 .question-number.active {
   background-color: white;
@@ -195,11 +213,13 @@ button:hover {
   background-color: #3700b3;
 }
 
-.progress-container h3 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.2rem;
-  color: #333;
+.progress-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100%; /* Adjust as needed */
+    position: relative;
 }
 
 /* Modal styles */
@@ -238,12 +258,11 @@ input[type="text"] {
   margin-top: 10px;
 }
 
-.submit-btn-container {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
+.submit-button {
+    align-self: center;
+    margin-top: auto; /* Pushes the submit button to the bottom */
+    margin-bottom: 20px; /* Adjust the spacing from the bottom */
 }
-
 .timer {
   font-size: 1rem;
   font-weight: bold;
@@ -252,6 +271,8 @@ input[type="text"] {
   padding: 5px 10px;
   margin: 0;
 }
+
+
 
 /* Disable text selection */
 body, .question-card, .option-container, .top-container, .progress-container {
@@ -294,7 +315,9 @@ body.no-right-click::after {
 <body>
 
   <div class="top-container">
-    <div>Your Top Container Content Here</div>
+    <div>NEET MOCK TEST</div>
+
+  
     
     <div class="timer" id="timer">
       Time Left: <span id="time-left">03:00:00</span>
@@ -314,16 +337,15 @@ body.no-right-click::after {
     <div class="progress-container">
       <h3>Question Progress</h3>
       <div id="question-progress"></div>
+      
+        <button onclick="submitTest()">Submit Test</button>
+      </div>
 
       
     </div>
   </div>
 
   
-
-  <div class="submit-btn-container">
-    <button onclick="submitTest()">Submit Test</button>
-  </div>
   
 
   <script type="module">
@@ -505,38 +527,47 @@ body.no-right-click::after {
     };
 
 
-    window.submitTest = function () {
-      const confirmation = confirm("Are you sure you want to submit the test?");
-      if (confirmation) {
-        const userDocRef = doc(db, "responses", username);
-        const responseData = {};
-        for (let i = 0; i < questions.length; i++) {
-          responseData[`responses.${i}`] = {
+    window.submitTest = function (autoSubmit = false) {
+    if (!autoSubmit) {
+        const confirmation = confirm("Are you sure you want to submit the test?");
+        if (!confirmation) return;
+    }
+
+    const userDocRef = doc(db, "responses", username);
+    const responseData = {};
+    for (let i = 0; i < questions.length; i++) {
+        responseData[`responses.${i}`] = {
             question: questions[i].question,
             selectedAnswer: userResponses[i] || null
-          };
-        }
+        };
+    }
 
-        // Save user responses to Firestore
-        setDoc(
-          userDocRef,
-          {
+    // Save user responses to Firestore
+    setDoc(
+        userDocRef,
+        {
             ...responseData,
             timestamp: serverTimestamp(),
-          },
-          { merge: true }
-        )
-          .then(() => {
-            // After saving data, clear local storage and redirect to result page
-            localStorage.clear(); // Clear all local storage data
+        },
+        { merge: true }
+    )
+    .then(() => {
+        // After saving data, clear local storage
+        localStorage.clear();
+
+        if (autoSubmit) {
+            alert("You have switched tabs too many times. Your test has been submitted.");
+            window.location.href = "cheat.html"; // Redirect to cheat page if auto-submitted
+        } else {
             alert("Test submitted successfully!");
-            window.location.href = `result.html?username=${username}`; // Redirect to result page
-          })
-          .catch((error) => {
-            alert("Error submitting test: " + error.message);
-          });
-      }
-    };
+            window.location.href = `result.html?username=${username}`; // Redirect to result page for manual submission
+        }
+    })
+    .catch((error) => {
+        alert("Error submitting test: " + error.message);
+    });
+};
+
     window.clearSelection = function () {
       // Clear the radio button selection
       const radios = document.querySelectorAll(`input[name="q${currentQuestionIndex}"]`);
@@ -567,6 +598,10 @@ body.no-right-click::after {
         alert("Invalid username. Access denied.");
       }
     };
+
+
+
+  
 
     let timeRemaining = 3 * 60 * 60; // 3 hours in seconds
 
@@ -607,6 +642,47 @@ document.addEventListener('contextmenu', function (event) {
 document.addEventListener('selectstart', function (event) {
   event.preventDefault(); // Prevents text selection
 });
+
+
+let tabSwitchCount = 0;
+const maxTabSwitches = 5;
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        tabSwitchCount++;
+
+        if (tabSwitchCount >= maxTabSwitches) {
+            alert("You have switched tabs too many times. Your test is being submitted.");
+            submitTest(true); // Auto-submit due to tab switching
+        } else {
+            showWarningPopup();
+        }
+    }
+});
+
+
+
+function showWarningPopup() {
+    const popup = document.createElement("div");
+    popup.innerHTML = `
+        <div style="
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 8px; z-index: 1000; text-align: center;
+        ">
+            <h2>Switching tabs will submit the test</h2>
+            <p>Changing tab while attempting the test will submit the test next time, please make sure that you don't switch tabs.</p>
+            <button onclick="this.parentElement.remove()">OK</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
+
+if (sessionStorage.getItem("cheatingDetected")) {
+        window.location.href = "cheat.html"; // Immediately redirect if flagged
+        window.location.href = "result.html"; // Immediately redirect if flagged
+
+      }
 
   </script>
 </body>
