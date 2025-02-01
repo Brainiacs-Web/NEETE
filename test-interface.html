@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -336,6 +337,7 @@ body.no-right-click::after {
     <div class="question-card" id="question-card"></div>
     <div class="progress-container">
       <h3>Question Progress</h3>
+      
       <div id="question-progress"></div>
       
         <button onclick="submitTest()">Submit Test</button>
@@ -379,29 +381,37 @@ body.no-right-click::after {
     }
 
     function displayQuestion() {
-      const questionData = questions[currentQuestionIndex];
-      const questionCard = document.getElementById("question-card");
+  const questionData = questions[currentQuestionIndex];
+  const questionCard = document.getElementById("question-card");
 
-      // Check if there's a saved answer or review state in localStorage
-      const savedAnswer = localStorage.getItem(`response_${currentQuestionIndex}`);
-      const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
+  const savedAnswer = localStorage.getItem(`response_${currentQuestionIndex}`);
+  const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
 
-      questionCard.innerHTML = `  
+  // Function to check if a string is a URL
+  function isURL(str) {
+    return /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/i.test(str);
+  }
+
+  questionCard.innerHTML = `  
     <p class="question-number">Question ${currentQuestionIndex + 1}</p>
-    <p class="question-text">${questionData.question}</p>
+    <div class="question-text">
+      ${isURL(questionData.question) ? `<img src="${questionData.question}" alt="Question Image" style="max-width:100%; height:auto;">` : questionData.question}
+    </div>
     <div class="option-container">
       ${questionData.options
-          .map(
-            (option, index) => ` 
+        .map(
+          (option, index) => ` 
         <div class="image-option">
           <input type="radio" name="q${currentQuestionIndex}" id="option${index}" value="${String.fromCharCode(65 + index)}">
           <label for="option${index}">
-            <div class="option-content">${String.fromCharCode(65 + index)}. ${option}</div>
+            <div class="option-content">
+              ${isURL(option) ? `<img src="${option}" alt="Option Image" style="max-width:100px; height:auto;">` : `${String.fromCharCode(65 + index)}. ${option}`}
+            </div>
           </label>
         </div>
       `
-          )
-          .join("")}
+        )
+        .join("")}
     </div>
     <div class="button-container">
       <button class="previous-btn" onclick="goToPrevious()">Previous</button>
@@ -411,12 +421,12 @@ body.no-right-click::after {
     </div>
   `;
 
-      // If there was a saved answer, mark it as checked
-      if (savedAnswer) {
-        const radioBtn = document.querySelector(`input[name="q${currentQuestionIndex}"][value="${savedAnswer}"]`);
-        if (radioBtn) radioBtn.checked = true;
-      }
-    }
+  // Restore saved answer
+  if (savedAnswer) {
+    const radioBtn = document.querySelector(`input[name="q${currentQuestionIndex}"][value="${savedAnswer}"]`);
+    if (radioBtn) radioBtn.checked = true;
+  }
+}
 
     window.markAsReview = function () {
       const isMarkedForReview = localStorage.getItem(`review_${currentQuestionIndex}`) === "true";
