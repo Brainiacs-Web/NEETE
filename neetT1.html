@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MCQ Test</title>
+  <title>NEET Mock Test</title>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
@@ -40,7 +40,7 @@ body {
 }
 
 .top-container .logo {
-  height: 40px; /* Adjust as needed */
+  height: 80px; /* Adjust as needed */
   width: auto;
 }
 
@@ -93,7 +93,7 @@ body {
 
 .progress-container {
   overflow-y: auto;
-  width: 20%; /* Decreased width of the progress container */
+  width: 40%; /* Decreased width of the progress container */
 }
 
 .question-text {
@@ -336,7 +336,7 @@ body.no-right-click::after {
   <div class="container blur" id="content">
     <div class="question-card" id="question-card"></div>
     <div class="progress-container">
-      <h3>Question Progress</h3>
+      <h3>Questions</h3>
       
       <div id="question-progress"></div>
       
@@ -395,7 +395,7 @@ body.no-right-click::after {
   questionCard.innerHTML = `  
     <p class="question-number">Question ${currentQuestionIndex + 1}</p>
     <div class="question-text">
-      ${isURL(questionData.question) ? `<img src="${questionData.question}" alt="Question Image" style="max-width:100%; height:auto;">` : questionData.question}
+      ${isURL(questionData.question) ? `<img src="${questionData.question}" alt="Question Image" style="max-width:90%; height:auto;">` : questionData.question}
     </div>
     <div class="option-container">
       ${questionData.options
@@ -612,34 +612,44 @@ body.no-right-click::after {
 
 
   
+    let timerInterval;
+let timeLeft = 3 * 60 * 60; // 3 hours in seconds
 
-    let timeRemaining = 3 * 60 * 60; // 3 hours in seconds
+function updateTimerDisplay() {
+  const hours = String(Math.floor(timeLeft / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((timeLeft % 3600) / 60)).padStart(2, '0');
+  const seconds = String(timeLeft % 60).padStart(2, '0');
+  document.getElementById('time-left').textContent = `${hours}:${minutes}:${seconds}`;
+}
 
-    function startTimer() {
-      const timerElement = document.getElementById("time-left");
+function startTimer() {
+  // Start the timer interval, this will run every second regardless of tab visibility
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
 
-      const interval = setInterval(() => {
-        const hours = Math.floor(timeRemaining / 3600);
-        const minutes = Math.floor((timeRemaining % 3600) / 60);
-        const seconds = timeRemaining % 60;
-
-        timerElement.textContent = `${hours.toString().padStart(2, "0")}:${minutes
-          .toString()
-          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-
-        if (timeRemaining <= 0) {
-          clearInterval(interval);
-          alert("Time's up! Your test will be submitted automatically.");
-          submitTest(); // Automatically submit the test
-        }
-
-        timeRemaining--;
-      }, 1000);
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      alert("Time's up!");
+      submitTest(); // Call the function to submit the test after time is up
     }
+  }, 1000);
+}
 
-    window.onload = () => {
-      startTimer();
-    };
+// Start the timer as soon as the page loads
+window.onload = startTimer;
+
+// Optionally, display a message when the tab is switched
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // Show a warning message (you can customize this)
+    console.log("You switched tabs. The timer will continue running in the background.");
+  } else {
+    // Optionally, show that the tab is back in focus (you can customize this)
+    console.log("You're back on the page. The timer continues.");
+  }
+});
+
 
 
     // Disable right-click functionality
